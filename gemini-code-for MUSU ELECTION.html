@@ -1,0 +1,494 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>University Students' Union Election Results - Live Portal</title>
+  <style>
+    :root {
+      --primary: #1a365d;
+      --accent: #c53030;
+      --bg: #f0f4f8;
+      --card-bg: #ffffff;
+      --lead-bg: #ebf8ff;
+      --lead-border: #3182ce;
+      --won-bg: #f0fff4;
+      --won-border: #38a169;
+      --text: #2d3748;
+      --muted: #718096;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      background-color: var(--bg);
+      color: var(--text);
+      padding-bottom: 40px;
+    }
+
+    /* Top ECI-Style Header */
+    header {
+      background: linear-gradient(135deg, #0f2942 0%, #1a365d 100%);
+      color: #fff;
+      padding: 20px;
+      text-align: center;
+      border-bottom: 4px solid #ecc94b;
+      box-shadow: 0 2px 10px rgba(0,0,0,0.15);
+    }
+
+    header h1 {
+      font-size: 22px;
+      letter-spacing: 0.5px;
+      text-transform: uppercase;
+      margin-bottom: 6px;
+    }
+
+    header p {
+      font-size: 14px;
+      color: #cbd5e0;
+    }
+
+    /* Live Status Bar */
+    .status-bar {
+      max-width: 1100px;
+      margin: 16px auto;
+      padding: 12px 20px;
+      background: #fff;
+      border-radius: 8px;
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: space-between;
+      align-items: center;
+      gap: 10px;
+      box-shadow: 0 1px 4px rgba(0,0,0,0.08);
+      font-size: 13px;
+    }
+
+    .live-indicator {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-weight: 700;
+      color: var(--accent);
+    }
+
+    .pulse-dot {
+      width: 10px;
+      height: 10px;
+      background-color: var(--accent);
+      border-radius: 50%;
+      animation: pulse 1.5s infinite;
+    }
+
+    @keyframes pulse {
+      0% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(197, 48, 48, 0.7); }
+      70% { transform: scale(1); box-shadow: 0 0 0 8px rgba(197, 48, 48, 0); }
+      100% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(197, 48, 48, 0); }
+    }
+
+    .refresh-info {
+      color: var(--muted);
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .btn-refresh {
+      background: var(--primary);
+      color: #fff;
+      border: none;
+      padding: 6px 12px;
+      border-radius: 4px;
+      cursor: pointer;
+      font-size: 12px;
+      font-weight: 600;
+    }
+
+    /* Post Filter Tabs */
+    .tabs-container {
+      max-width: 1100px;
+      margin: 0 auto 20px;
+      padding: 0 15px;
+      display: flex;
+      gap: 8px;
+      overflow-x: auto;
+    }
+
+    .tab-btn {
+      padding: 10px 18px;
+      background: #e2e8f0;
+      border: none;
+      border-radius: 6px;
+      font-weight: 600;
+      font-size: 13px;
+      color: var(--text);
+      cursor: pointer;
+      white-space: nowrap;
+      transition: 0.2s;
+    }
+
+    .tab-btn.active {
+      background: var(--primary);
+      color: #fff;
+    }
+
+    /* Main Results Grid */
+    .results-container {
+      max-width: 1100px;
+      margin: 0 auto;
+      padding: 0 15px;
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(340px, 1fr));
+      gap: 20px;
+    }
+
+    .post-card {
+      background: var(--card-bg);
+      border-radius: 10px;
+      overflow: hidden;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+      border: 1px solid #e2e8f0;
+    }
+
+    .post-header {
+      background: #edf2f7;
+      padding: 14px 18px;
+      border-bottom: 1px solid #cbd5e0;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .post-title {
+      font-size: 16px;
+      font-weight: 700;
+      color: var(--primary);
+      text-transform: uppercase;
+    }
+
+    .round-badge {
+      font-size: 11px;
+      font-weight: 700;
+      padding: 4px 10px;
+      border-radius: 20px;
+      background: #fefcbf;
+      color: #744210;
+      border: 1px solid #f6e05e;
+    }
+
+    .round-badge.declared {
+      background: #c6f6d5;
+      color: #22543d;
+      border-color: #68d391;
+    }
+
+    /* Candidate List inside a Post Card */
+    .candidate-list {
+      padding: 12px 18px;
+    }
+
+    .candidate-row {
+      padding: 12px;
+      border-radius: 8px;
+      margin-bottom: 10px;
+      border: 1px solid #e2e8f0;
+      background: #fafafa;
+      position: relative;
+    }
+
+    .candidate-row.leading {
+      background: var(--lead-bg);
+      border-color: var(--lead-border);
+    }
+
+    .candidate-row.won {
+      background: var(--won-bg);
+      border-color: var(--won-border);
+    }
+
+    .cand-top {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      margin-bottom: 6px;
+    }
+
+    .cand-name {
+      font-weight: 700;
+      font-size: 15px;
+      color: #1a202c;
+    }
+
+    .cand-dept {
+      font-size: 12px;
+      color: var(--muted);
+      margin-top: 2px;
+    }
+
+    .status-pill {
+      font-size: 11px;
+      font-weight: 700;
+      padding: 3px 8px;
+      border-radius: 4px;
+      text-transform: uppercase;
+    }
+
+    .pill-leading { background: #3182ce; color: #fff; }
+    .pill-won { background: #38a169; color: #fff; }
+    .pill-trailing { background: #e2e8f0; color: #4a5568; }
+
+    .cand-stats {
+      display: flex;
+      justify-content: space-between;
+      font-size: 13px;
+      margin-top: 8px;
+      font-weight: 600;
+    }
+
+    .margin-pos { color: #2b6cb0; }
+    .won-margin { color: #2f855a; }
+    .margin-neg { color: #c53030; }
+
+    /* Progress Bar */
+    .progress-track {
+      width: 100%;
+      height: 7px;
+      background: #e2e8f0;
+      border-radius: 4px;
+      margin-top: 8px;
+      overflow: hidden;
+    }
+
+    .progress-fill {
+      height: 100%;
+      background: #a0aec0;
+      transition: width 0.5s ease;
+    }
+
+    .leading .progress-fill { background: #3182ce; }
+    .won .progress-fill { background: #38a169; }
+
+    .post-footer {
+      padding: 10px 18px;
+      background: #f7fafc;
+      border-top: 1px solid #edf2f7;
+      font-size: 12px;
+      color: var(--muted);
+      display: flex;
+      justify-content: space-between;
+    }
+  </style>
+</head>
+<body>
+
+  <header>
+    <h1>Manipur University Students' Union Election 2026-27</h1>
+    <p>Official Live Counting &amp; Result Dissemination Portal</p>
+  </header>
+
+  <div class="status-bar">
+    <div class="live-indicator">
+      <span class="pulse-dot"></span>
+      <span>LIVE COUNTING UPDATES</span>
+    </div>
+    <div class="refresh-info">
+      <span id="last-updated">Last updated: Just now</span>
+      <span>Auto-refresh in <strong id="countdown">15</strong>s</span>
+      <button class="btn-refresh" onclick="fetchElectionData()">Refresh Now</button>
+    </div>
+  </div>
+
+  <!-- Post Filter Tabs -->
+  <div class="tabs-container" id="tabs-container"></div>
+
+  <!-- Cards Grid -->
+  <div class="results-container" id="results-container"></div>
+
+  <script>
+    // =========================================================================
+    // STEP 1: PASTE YOUR PUBLISHED GOOGLE SHEET CSV LINK HERE (Optional)
+    // Leave empty ("") to use the built-in Mock Data below.
+    // =========================================================================
+    const GOOGLE_SHEET_CSV_URL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vRWkK0YIwGVvHnDC2YuipXhFQ5Rwx9G-0NkEkr3mg5GERFmyaWUPk2Ma6pFr3E1693rv5A17qODrdcp/pub?gid=0&single=true&output=csv";
+
+    // Built-in Mock Data (Used when GOOGLE_SHEET_CSV_URL is empty)
+    let electionData = [
+      { post: "President", round: "Round 3 of 4", status: "Counting", candidate: "Th.unganba Meitei", dept: "Dept. of Political Science • Ballot #1", votes: 1245 },
+      { post: "President", round: "Round 3 of 4", status: "Counting", candidate: "L. Priya Devi", dept: "Dept. of Economics • Ballot #2", votes: 1102 },
+      { post: "President", round: "Round 3 of 4", status: "Counting", candidate: "K. Rohan Sharma", dept: "Dept. of Computer Science • Ballot #3", votes: 640 },
+      { post: "President", round: "Round 3 of 4", status: "Counting", candidate: "NOTA", dept: "None of the Above", votes: 38 },
+
+      { post: "General Secretary", round: "Final Round", status: "Result Declared", candidate: "M. Sanathoi Chanu", dept: "Dept. of English • Ballot #1", votes: 1580 },
+      { post: "General Secretary", round: "Final Round", status: "Result Declared", candidate: "S. David Kom", dept: "Dept. of History • Ballot #2", votes: 1290 },
+      { post: "General Secretary", round: "Final Round", status: "Result Declared", candidate: "NOTA", dept: "None of the Above", votes: 55 },
+
+      { post: "Finance Secretary", round: "Round 2 of 4", status: "Counting", candidate: "N. Amarjit Singh", dept: "Dept. of Commerce • Ballot #1", votes: 890 },
+      { post: "Finance Secretary", round: "Round 2 of 4", status: "Counting", candidate: "Y. Bidyalakshmi", dept: "Dept. of Mathematics • Ballot #2", votes: 945 },
+      { post: "Finance Secretary", round: "Round 2 of 4", status: "Counting", candidate: "NOTA", dept: "None of the Above", votes: 21 }
+    ];
+
+    let activeFilter = "ALL";
+    let timerSeconds = 15;
+
+    // Parse simple CSV from Google Sheets
+    function parseCSV(csvText) {
+      const lines = csvText.trim().split("\n");
+      const headers = lines[0].split(",").map(h => h.trim());
+      return lines.slice(1).map(line => {
+        const values = line.split(",").map(v => v.trim());
+        return {
+          post: values[0] || "",
+          round: values[1] || "",
+          status: values[2] || "Counting",
+          candidate: values[3] || "",
+          dept: values[4] || "",
+          votes: parseInt(values[5], 10) || 0
+        };
+      });
+    }
+
+    async function fetchElectionData() {
+      if (GOOGLE_SHEET_CSV_URL) {
+        try {
+          const response = await fetch(GOOGLE_SHEET_CSV_URL + "&t=" + new Date().getTime());
+          const csvText = await response.text();
+          electionData = parseCSV(csvText);
+        } catch (err) {
+          console.error("Failed to fetch live sheet, showing cached data.", err);
+        }
+      }
+      renderTabs();
+      renderResults();
+      const now = new Date();
+      document.getElementById("last-updated").textContent =
+        "Last updated: " + now.toLocaleTimeString();
+      timerSeconds = 15;
+    }
+
+    function renderTabs() {
+      const posts = ["ALL", ...new Set(electionData.map(item => item.post))];
+      const container = document.getElementById("tabs-container");
+      container.innerHTML = posts.map(post => `
+        <button class="tab-btn ${activeFilter === post ? 'active' : ''}" 
+                onclick="setFilter('${post}')">
+          ${post === 'ALL' ? 'All Posts (' + (posts.length - 1) + ')' : post}
+        </button>
+      `).join("");
+    }
+
+    function setFilter(post) {
+      activeFilter = post;
+      renderTabs();
+      renderResults();
+    }
+
+    function renderResults() {
+      const container = document.getElementById("results-container");
+      const grouped = {};
+
+      electionData.forEach(row => {
+        if (activeFilter !== "ALL" && row.post !== activeFilter) return;
+        if (!grouped[row.post]) {
+          grouped[row.post] = {
+            round: row.round,
+            status: row.status,
+            candidates: []
+          };
+        }
+        grouped[row.post].candidates.push(row);
+      });
+
+      container.innerHTML = Object.keys(grouped).map(postName => {
+        const postGroup = grouped[postName];
+        // Sort candidates highest to lowest votes
+        const sorted = [...postGroup.candidates].sort((a, b) => b.votes - a.votes);
+        const totalVotes = sorted.reduce((sum, c) => sum + c.votes, 0);
+        const highestVotes = sorted[0]?.votes || 0;
+        const runnerUpVotes = sorted[1]?.votes || 0;
+        const isDeclared = postGroup.status.toLowerCase().includes("declared");
+
+        const candidatesHTML = sorted.map((cand, index) => {
+          const pct = totalVotes > 0 ? ((cand.votes / totalVotes) * 100).toFixed(1) : "0.0";
+          let rowClass = "";
+          let badgeClass = "pill-trailing";
+          let badgeText = "Trailing";
+          let marginHTML = "";
+
+          if (index === 0 && highestVotes > 0) {
+            const leadMargin = highestVotes - runnerUpVotes;
+            if (isDeclared) {
+              rowClass = "won";
+              badgeClass = "pill-won";
+              badgeText = "Won";
+              marginHTML = `<span class="won-margin">Won by +${leadMargin.toLocaleString()} votes</span>`;
+            } else {
+              rowClass = "leading";
+              badgeClass = "pill-leading";
+              badgeText = "Leading";
+              marginHTML = `<span class="margin-pos">Lead: +${leadMargin.toLocaleString()}</span>`;
+            }
+          } else {
+            const trailMargin = highestVotes - cand.votes;
+            badgeText = isDeclared ? "Lost" : "Trailing";
+            marginHTML = `<span class="margin-neg">-${trailMargin.toLocaleString()}</span>`;
+          }
+
+          return `
+            <div class="candidate-row ${rowClass}">
+              <div class="cand-top">
+                <div>
+                  <div class="cand-name">${cand.candidate}</div>
+                  <div class="cand-dept">${cand.dept}</div>
+                </div>
+                <span class="status-pill ${badgeClass}">${badgeText}</span>
+              </div>
+              <div class="cand-stats">
+                <span>${cand.votes.toLocaleString()} votes (${pct}%)</span>
+                ${marginHTML}
+              </div>
+              <div class="progress-track">
+                <div class="progress-fill" style="width: ${pct}%"></div>
+              </div>
+            </div>
+          `;
+        }).join("");
+
+        return `
+          <div class="post-card">
+            <div class="post-header">
+              <span class="post-title">${postName}</span>
+              <span class="round-badge ${isDeclared ? 'declared' : ''}">
+                ${postGroup.round} • ${postGroup.status}
+              </span>
+            </div>
+            <div class="candidate-list">
+              ${candidatesHTML}
+            </div>
+            <div class="post-footer">
+              <span>Total Votes Polled/Counted</span>
+              <strong>${totalVotes.toLocaleString()} Votes</strong>
+            </div>
+          </div>
+        `;
+      }).join("");
+    }
+
+    // Auto-refresh countdown loop
+    setInterval(() => {
+      timerSeconds--;
+      if (timerSeconds <= 0) {
+        fetchElectionData();
+      }
+      document.getElementById("countdown").textContent = timerSeconds;
+    }, 1000);
+
+    // Initial load
+    fetchElectionData();
+  </script>
+</body>
+</html>
