@@ -1,9 +1,9 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
+  <meta charset="UTF-8EC" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>University Students' Union Election Results - Live Portal</title>
+  <title>Manipur University Students' Union Election Result - Live Portal</title>
   <style>
     :root {
       --primary: #1a365d;
@@ -14,6 +14,8 @@
       --lead-border: #3182ce;
       --won-bg: #f0fff4;
       --won-border: #38a169;
+      --wait-bg: #f7fafc;
+      --wait-border: #cbd5e0;
       --text: #2d3748;
       --muted: #718096;
     }
@@ -28,14 +30,13 @@
       font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
       background-color: var(--bg);
       color: var(--text);
-      padding-bottom: 40px;
+      padding-bottom: 50px;
     }
 
-    /* Top ECI-Style Header */
     header {
       background: linear-gradient(135deg, #0f2942 0%, #1a365d 100%);
       color: #fff;
-      padding: 20px;
+      padding: 20px 15px;
       text-align: center;
       border-bottom: 4px solid #ecc94b;
       box-shadow: 0 2px 10px rgba(0,0,0,0.15);
@@ -53,9 +54,9 @@
       color: #cbd5e0;
     }
 
-    /* Live Status Bar */
+    /* Status & Summary Bar */
     .status-bar {
-      max-width: 1100px;
+      max-width: 1180px;
       margin: 16px auto;
       padding: 12px 20px;
       background: #fff;
@@ -64,7 +65,7 @@
       flex-wrap: wrap;
       justify-content: space-between;
       align-items: center;
-      gap: 10px;
+      gap: 12px;
       box-shadow: 0 1px 4px rgba(0,0,0,0.08);
       font-size: 13px;
     }
@@ -94,6 +95,7 @@
     .refresh-info {
       color: var(--muted);
       display: flex;
+      flex-wrap: wrap;
       align-items: center;
       gap: 12px;
     }
@@ -109,18 +111,19 @@
       font-weight: 600;
     }
 
-    /* Post Filter Tabs */
+    /* Filter Tabs */
     .tabs-container {
-      max-width: 1100px;
+      max-width: 1180px;
       margin: 0 auto 20px;
       padding: 0 15px;
       display: flex;
       gap: 8px;
       overflow-x: auto;
+      scrollbar-width: thin;
     }
 
     .tab-btn {
-      padding: 10px 18px;
+      padding: 9px 16px;
       background: #e2e8f0;
       border: none;
       border-radius: 6px;
@@ -137,14 +140,25 @@
       color: #fff;
     }
 
-    /* Main Results Grid */
+    /* Results Grid */
     .results-container {
-      max-width: 1100px;
+      max-width: 1180px;
       margin: 0 auto;
       padding: 0 15px;
       display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(340px, 1fr));
+      grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
       gap: 20px;
+    }
+
+    .loading-box {
+      grid-column: 1 / -1;
+      background: #fff;
+      padding: 40px 20px;
+      text-align: center;
+      border-radius: 10px;
+      color: var(--muted);
+      font-weight: 600;
+      border: 1px solid #e2e8f0;
     }
 
     .post-card {
@@ -153,6 +167,8 @@
       overflow: hidden;
       box-shadow: 0 2px 8px rgba(0,0,0,0.08);
       border: 1px solid #e2e8f0;
+      display: flex;
+      flex-direction: column;
     }
 
     .post-header {
@@ -162,6 +178,7 @@
       display: flex;
       justify-content: space-between;
       align-items: center;
+      gap: 10px;
     }
 
     .post-title {
@@ -179,6 +196,7 @@
       background: #fefcbf;
       color: #744210;
       border: 1px solid #f6e05e;
+      white-space: nowrap;
     }
 
     .round-badge.declared {
@@ -187,9 +205,16 @@
       border-color: #68d391;
     }
 
-    /* Candidate List inside a Post Card */
+    .round-badge.waiting {
+      background: #e2e8f0;
+      color: #4a5568;
+      border-color: #cbd5e0;
+    }
+
+    /* Candidate Rows */
     .candidate-list {
-      padding: 12px 18px;
+      padding: 14px 18px;
+      flex: 1;
     }
 
     .candidate-row {
@@ -198,7 +223,10 @@
       margin-bottom: 10px;
       border: 1px solid #e2e8f0;
       background: #fafafa;
-      position: relative;
+    }
+
+    .candidate-row:last-child {
+      margin-bottom: 0;
     }
 
     .candidate-row.leading {
@@ -211,10 +239,16 @@
       border-color: var(--won-border);
     }
 
+    .candidate-row.nota-row {
+      background: #f8fafc;
+      border-style: dashed;
+      border-color: #cbd5e0;
+    }
+
     .cand-top {
       display: flex;
       justify-content: space-between;
-      align-items: flex-start;
+      align-items: center;
       margin-bottom: 6px;
     }
 
@@ -222,12 +256,6 @@
       font-weight: 700;
       font-size: 15px;
       color: #1a202c;
-    }
-
-    .cand-dept {
-      font-size: 12px;
-      color: var(--muted);
-      margin-top: 2px;
     }
 
     .status-pill {
@@ -241,20 +269,22 @@
     .pill-leading { background: #3182ce; color: #fff; }
     .pill-won { background: #38a169; color: #fff; }
     .pill-trailing { background: #e2e8f0; color: #4a5568; }
+    .pill-waiting { background: #edf2f7; color: #718096; }
+    .pill-nota { background: #718096; color: #fff; }
 
     .cand-stats {
       display: flex;
       justify-content: space-between;
       font-size: 13px;
-      margin-top: 8px;
+      margin-top: 6px;
       font-weight: 600;
     }
 
     .margin-pos { color: #2b6cb0; }
     .won-margin { color: #2f855a; }
     .margin-neg { color: #c53030; }
+    .nota-label { color: var(--muted); font-weight: 500; font-size: 12px; }
 
-    /* Progress Bar */
     .progress-track {
       width: 100%;
       height: 7px;
@@ -267,11 +297,73 @@
     .progress-fill {
       height: 100%;
       background: #a0aec0;
-      transition: width 0.5s ease;
+      transition: width 0.4s ease;
     }
 
     .leading .progress-fill { background: #3182ce; }
     .won .progress-fill { background: #38a169; }
+
+    /* Expandable Booth Breakdown Section */
+    .booth-toggle-bar {
+      padding: 8px 18px;
+      background: #f8fafc;
+      border-top: 1px solid #edf2f7;
+      text-align: center;
+    }
+
+    .btn-booth-toggle {
+      background: none;
+      border: none;
+      color: #2b6cb0;
+      font-size: 12px;
+      font-weight: 600;
+      cursor: pointer;
+      padding: 4px 8px;
+    }
+
+    .btn-booth-toggle:hover {
+      text-decoration: underline;
+    }
+
+    .booth-table-wrap {
+      display: none;
+      overflow-x: auto;
+      border-top: 1px solid #e2e8f0;
+      background: #fff;
+      padding: 10px 14px;
+    }
+
+    .booth-table-wrap.open {
+      display: block;
+    }
+
+    .booth-table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 11px;
+      text-align: center;
+    }
+
+    .booth-table th, .booth-table td {
+      border: 1px solid #cbd5e0;
+      padding: 5px 7px;
+      white-space: nowrap;
+    }
+
+    .booth-table th {
+      background: #edf2f7;
+      color: var(--primary);
+      font-weight: 700;
+    }
+
+    .booth-table td.sticky-col, .booth-table th.sticky-col {
+      position: sticky;
+      left: 0;
+      background: #f7fafc;
+      text-align: left;
+      font-weight: 700;
+      z-index: 1;
+    }
 
     .post-footer {
       padding: 10px 18px;
@@ -288,16 +380,16 @@
 
   <header>
     <h1>Manipur University Students' Union Election 2026-27</h1>
-    <p>Official Live Counting &amp; Result Dissemination Portal</p>
+    <p>Live Booth-Wise Counting (Booths 1 – 15) &amp; Result Portal Developed by Goutam Elangbam (Dept of Geography)</p>
   </header>
 
   <div class="status-bar">
     <div class="live-indicator">
       <span class="pulse-dot"></span>
-      <span>LIVE COUNTING UPDATES</span>
+      <span>LIVE RESULT BOOTH TALLY</span>
     </div>
     <div class="refresh-info">
-      <span id="last-updated">Last updated: Just now</span>
+      <span id="last-updated">Connecting to live sheet...</span>
       <span>Auto-refresh in <strong id="countdown">15</strong>s</span>
       <button class="btn-refresh" onclick="fetchElectionData()">Refresh Now</button>
     </div>
@@ -307,75 +399,120 @@
   <div class="tabs-container" id="tabs-container"></div>
 
   <!-- Cards Grid -->
-  <div class="results-container" id="results-container"></div>
+  <div class="results-container" id="results-container">
+    <div class="loading-box">Loading live election results...</div>
+  </div>
 
   <script>
-    // =========================================================================
-    // STEP 1: PASTE YOUR PUBLISHED GOOGLE SHEET CSV LINK HERE (Optional)
-    // Leave empty ("") to use the built-in Mock Data below.
-    // =========================================================================
     const GOOGLE_SHEET_CSV_URL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vRWkK0YIwGVvHnDC2YuipXhFQ5Rwx9G-0NkEkr3mg5GERFmyaWUPk2Ma6pFr3E1693rv5A17qODrdcp/pub?gid=0&single=true&output=csv";
 
-    // Built-in Mock Data (Used when GOOGLE_SHEET_CSV_URL is empty)
-    let electionData = [
-      { post: "President", round: "Round 3 of 4", status: "Counting", candidate: "Th.unganba Meitei", dept: "Dept. of Political Science • Ballot #1", votes: 1245 },
-      { post: "President", round: "Round 3 of 4", status: "Counting", candidate: "L. Priya Devi", dept: "Dept. of Economics • Ballot #2", votes: 1102 },
-      { post: "President", round: "Round 3 of 4", status: "Counting", candidate: "K. Rohan Sharma", dept: "Dept. of Computer Science • Ballot #3", votes: 640 },
-      { post: "President", round: "Round 3 of 4", status: "Counting", candidate: "NOTA", dept: "None of the Above", votes: 38 },
+    const TOTAL_BOOTHS = 15;
 
-      { post: "General Secretary", round: "Final Round", status: "Result Declared", candidate: "M. Sanathoi Chanu", dept: "Dept. of English • Ballot #1", votes: 1580 },
-      { post: "General Secretary", round: "Final Round", status: "Result Declared", candidate: "S. David Kom", dept: "Dept. of History • Ballot #2", votes: 1290 },
-      { post: "General Secretary", round: "Final Round", status: "Result Declared", candidate: "NOTA", dept: "None of the Above", votes: 55 },
-
-      { post: "Finance Secretary", round: "Round 2 of 4", status: "Counting", candidate: "N. Amarjit Singh", dept: "Dept. of Commerce • Ballot #1", votes: 890 },
-      { post: "Finance Secretary", round: "Round 2 of 4", status: "Counting", candidate: "Y. Bidyalakshmi", dept: "Dept. of Mathematics • Ballot #2", votes: 945 },
-      { post: "Finance Secretary", round: "Round 2 of 4", status: "Counting", candidate: "NOTA", dept: "None of the Above", votes: 21 }
-    ];
-
+    let electionData = [];
     let activeFilter = "ALL";
     let timerSeconds = 15;
+    let openBoothTables = {};
 
-    // Parse simple CSV from Google Sheets
-    function parseCSV(csvText) {
-      const lines = csvText.trim().split("\n");
-      const headers = lines[0].split(",").map(h => h.trim());
-      return lines.slice(1).map(line => {
-        const values = line.split(",").map(v => v.trim());
-        return {
-          post: values[0] || "",
-          round: values[1] || "",
-          status: values[2] || "Counting",
-          candidate: values[3] || "",
-          dept: values[4] || "",
-          votes: parseInt(values[5], 10) || 0
-        };
-      });
+    function isNotaCandidate(name) {
+      return name.trim().toUpperCase() === "NOTA";
+    }
+
+    function splitCSVLine(line) {
+      const result = [];
+      let current = "";
+      let inQuotes = false;
+      for (let i = 0; i < line.length; i++) {
+        const char = line[i];
+        if (char === '"') {
+          inQuotes = !inQuotes;
+        } else if (char === ',' && !inQuotes) {
+          result.push(current.trim());
+          current = "";
+        } else {
+          current += char;
+        }
+      }
+      result.push(current.trim());
+      return result;
+    }
+
+    function parseSheetCSV(csvText) {
+      const lines = csvText.trim().split(/\r?\n/);
+      const rows = [];
+
+      // Skip Row 0 (headers: Post, Candidate, Booth 1...Booth 15, Total)
+      for (let i = 1; i < lines.length; i++) {
+        if (!lines[i].trim()) continue;
+        const cols = splitCSVLine(lines[i]);
+        const post = cols[0] || "";
+        const candidate = cols[1] || "";
+        if (!post || !candidate) continue;
+
+        const booths = [];
+        let calculatedSum = 0;
+        let boothsFilledForCandidate = 0;
+
+        for (let b = 1; b <= TOTAL_BOOTHS; b++) {
+          const rawVal = (cols[b + 1] || "").replace(/,/g, "");
+          if (rawVal !== "" && !isNaN(parseInt(rawVal, 10))) {
+            const num = parseInt(rawVal, 10);
+            booths.push(num);
+            calculatedSum += num;
+            boothsFilledForCandidate++;
+          } else {
+            booths.push(null);
+          }
+        }
+
+        const rawTotal = (cols[TOTAL_BOOTHS + 2] || "").replace(/,/g, "");
+        const sheetTotal = !isNaN(parseInt(rawTotal, 10)) ? parseInt(rawTotal, 10) : 0;
+        const finalVotes = boothsFilledForCandidate > 0 ? calculatedSum : sheetTotal;
+
+        rows.push({
+          post,
+          candidate,
+          booths,
+          boothsFilled: boothsFilledForCandidate,
+          votes: finalVotes
+        });
+      }
+      return rows;
     }
 
     async function fetchElectionData() {
-      if (GOOGLE_SHEET_CSV_URL) {
-        try {
-          const response = await fetch(GOOGLE_SHEET_CSV_URL + "&t=" + new Date().getTime());
-          const csvText = await response.text();
-          electionData = parseCSV(csvText);
-        } catch (err) {
-          console.error("Failed to fetch live sheet, showing cached data.", err);
+      try {
+        const response = await fetch(GOOGLE_SHEET_CSV_URL, { cache: "no-store" });
+        if (!response.ok) {
+          throw new Error("HTTP status " + response.status);
+        }
+        const csvText = await response.text();
+        electionData = parseSheetCSV(csvText);
+
+        renderTabs();
+        renderResults();
+
+        document.getElementById("last-updated").textContent =
+          "Last updated: " + new Date().toLocaleTimeString();
+      } catch (err) {
+        console.error("Error fetching Google Sheet CSV:", err);
+        if (electionData.length === 0) {
+          document.getElementById("results-container").innerHTML =
+            '<div class="loading-box">Unable to load live data. Please check that the Google Sheet is Published to the Web as CSV.</div>';
         }
       }
-      renderTabs();
-      renderResults();
-      const now = new Date();
-      document.getElementById("last-updated").textContent =
-        "Last updated: " + now.toLocaleTimeString();
       timerSeconds = 15;
     }
 
     function renderTabs() {
       const posts = ["ALL", ...new Set(electionData.map(item => item.post))];
       const container = document.getElementById("tabs-container");
+      if (posts.length <= 1) {
+        container.innerHTML = "";
+        return;
+      }
       container.innerHTML = posts.map(post => `
         <button class="tab-btn ${activeFilter === post ? 'active' : ''}" 
-                onclick="setFilter('${post}')">
+                onclick="setFilter('${post.replace(/'/g, "\\'")}')">
           ${post === 'ALL' ? 'All Posts (' + (posts.length - 1) + ')' : post}
         </button>
       `).join("");
@@ -387,65 +524,109 @@
       renderResults();
     }
 
+    function toggleBoothTable(postId) {
+      openBoothTables[postId] = !openBoothTables[postId];
+      const el = document.getElementById("booth-wrap-" + postId);
+      const btn = document.getElementById("booth-btn-" + postId);
+      if (el && btn) {
+        el.classList.toggle("open", openBoothTables[postId]);
+        btn.textContent = openBoothTables[postId]
+          ? "▲ Hide Booth-wise Votes (Booth 1 – 15)"
+          : "▼ Show Booth-wise Votes (Booth 1 – 15)";
+      }
+    }
+
     function renderResults() {
       const container = document.getElementById("results-container");
-      const grouped = {};
+      if (electionData.length === 0) {
+        container.innerHTML = '<div class="loading-box">No candidate rows found in the Google Sheet yet.</div>';
+        return;
+      }
 
+      const grouped = {};
       electionData.forEach(row => {
         if (activeFilter !== "ALL" && row.post !== activeFilter) return;
         if (!grouped[row.post]) {
-          grouped[row.post] = {
-            round: row.round,
-            status: row.status,
-            candidates: []
-          };
+          grouped[row.post] = [];
         }
-        grouped[row.post].candidates.push(row);
+        grouped[row.post].push(row);
       });
 
-      container.innerHTML = Object.keys(grouped).map(postName => {
-        const postGroup = grouped[postName];
-        // Sort candidates highest to lowest votes
-        const sorted = [...postGroup.candidates].sort((a, b) => b.votes - a.votes);
-        const totalVotes = sorted.reduce((sum, c) => sum + c.votes, 0);
-        const highestVotes = sorted[0]?.votes || 0;
-        const runnerUpVotes = sorted[1]?.votes || 0;
-        const isDeclared = postGroup.status.toLowerCase().includes("declared");
+      container.innerHTML = Object.keys(grouped).map((postName, postIdx) => {
+        const candidates = grouped[postName];
+        const postId = "post_" + postIdx;
+
+        const boothsCounted = Math.max(...candidates.map(c => c.boothsFilled), 0);
+        const totalVotes = candidates.reduce((sum, c) => sum + c.votes, 0);
+
+        const isWaiting = boothsCounted === 0 && totalVotes === 0;
+        const isDeclared = boothsCounted === TOTAL_BOOTHS;
+
+        // Separate regular candidates and NOTA so NOTA is always pinned at the bottom
+        const regularCandidates = candidates.filter(c => !isNotaCandidate(c.candidate));
+        const notaCandidates = candidates.filter(c => isNotaCandidate(c.candidate));
+
+        const sortedRegular = isWaiting
+          ? [...regularCandidates]
+          : [...regularCandidates].sort((a, b) => b.votes - a.votes);
+
+        const sorted = [...sortedRegular, ...notaCandidates];
+
+        // Lead/Win margins are calculated strictly between human candidates
+        const highestVotes = sortedRegular[0]?.votes || 0;
+        const runnerUpVotes = sortedRegular[1]?.votes || 0;
+
+        let badgeClass = "";
+        let badgeLabel = `Live • ${boothsCounted}/${TOTAL_BOOTHS} Booths`;
+        if (isWaiting) {
+          badgeClass = "waiting";
+          badgeLabel = `Awaiting Count (0/${TOTAL_BOOTHS} Booths)`;
+        } else if (isDeclared) {
+          badgeClass = "declared";
+          badgeLabel = `Declared • ${TOTAL_BOOTHS}/${TOTAL_BOOTHS} Booths`;
+        }
 
         const candidatesHTML = sorted.map((cand, index) => {
           const pct = totalVotes > 0 ? ((cand.votes / totalVotes) * 100).toFixed(1) : "0.0";
+          const isNota = isNotaCandidate(cand.candidate);
+
           let rowClass = "";
-          let badgeClass = "pill-trailing";
-          let badgeText = "Trailing";
+          let pillClass = "pill-trailing";
+          let pillText = "Trailing";
           let marginHTML = "";
 
-          if (index === 0 && highestVotes > 0) {
+          if (isNota) {
+            rowClass = "nota-row";
+            pillClass = "pill-nota";
+            pillText = "NOTA";
+            marginHTML = `<span class="nota-label">None of the Above</span>`;
+          } else if (isWaiting) {
+            pillClass = "pill-waiting";
+            pillText = "Awaited";
+            marginHTML = `<span>Counting not started</span>`;
+          } else if (index === 0 && highestVotes > 0) {
             const leadMargin = highestVotes - runnerUpVotes;
             if (isDeclared) {
               rowClass = "won";
-              badgeClass = "pill-won";
-              badgeText = "Won";
+              pillClass = "pill-won";
+              pillText = "Won";
               marginHTML = `<span class="won-margin">Won by +${leadMargin.toLocaleString()} votes</span>`;
             } else {
               rowClass = "leading";
-              badgeClass = "pill-leading";
-              badgeText = "Leading";
+              pillClass = "pill-leading";
+              pillText = "Leading";
               marginHTML = `<span class="margin-pos">Lead: +${leadMargin.toLocaleString()}</span>`;
             }
           } else {
             const trailMargin = highestVotes - cand.votes;
-            badgeText = isDeclared ? "Lost" : "Trailing";
             marginHTML = `<span class="margin-neg">-${trailMargin.toLocaleString()}</span>`;
           }
 
           return `
             <div class="candidate-row ${rowClass}">
               <div class="cand-top">
-                <div>
-                  <div class="cand-name">${cand.candidate}</div>
-                  <div class="cand-dept">${cand.dept}</div>
-                </div>
-                <span class="status-pill ${badgeClass}">${badgeText}</span>
+                <div class="cand-name">${cand.candidate}</div>
+                <span class="status-pill ${pillClass}">${pillText}</span>
               </div>
               <div class="cand-stats">
                 <span>${cand.votes.toLocaleString()} votes (${pct}%)</span>
@@ -458,19 +639,54 @@
           `;
         }).join("");
 
+        let boothHeaders = "";
+        for (let b = 1; b <= TOTAL_BOOTHS; b++) {
+          boothHeaders += `<th>B${b}</th>`;
+        }
+
+        const boothRows = sorted.map(cand => {
+          const cells = cand.booths.map(val => `<td>${val !== null ? val : '-'}</td>`).join("");
+          return `
+            <tr>
+              <td class="sticky-col">${cand.candidate}</td>
+              ${cells}
+              <td><strong>${cand.votes}</strong></td>
+            </tr>
+          `;
+        }).join("");
+
+        const isExpanded = !!openBoothTables[postId];
+
         return `
           <div class="post-card">
             <div class="post-header">
               <span class="post-title">${postName}</span>
-              <span class="round-badge ${isDeclared ? 'declared' : ''}">
-                ${postGroup.round} • ${postGroup.status}
-              </span>
+              <span class="round-badge ${badgeClass}">${badgeLabel}</span>
             </div>
             <div class="candidate-list">
               ${candidatesHTML}
             </div>
+            <div class="booth-toggle-bar">
+              <button class="btn-booth-toggle" id="booth-btn-${postId}" onclick="toggleBoothTable('${postId}')">
+                ${isExpanded ? '▲ Hide Booth-wise Votes (Booth 1 – 15)' : '▼ Show Booth-wise Votes (Booth 1 – 15)'}
+              </button>
+            </div>
+            <div class="booth-table-wrap ${isExpanded ? 'open' : ''}" id="booth-wrap-${postId}">
+              <table class="booth-table">
+                <thead>
+                  <tr>
+                    <th class="sticky-col">Candidate</th>
+                    ${boothHeaders}
+                    <th>Total</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  ${boothRows}
+                </tbody>
+              </table>
+            </div>
             <div class="post-footer">
-              <span>Total Votes Polled/Counted</span>
+              <span>Total Valid Votes Counted (incl. NOTA)</span>
               <strong>${totalVotes.toLocaleString()} Votes</strong>
             </div>
           </div>
@@ -478,7 +694,7 @@
       }).join("");
     }
 
-    // Auto-refresh countdown loop
+    // Auto-refresh timer
     setInterval(() => {
       timerSeconds--;
       if (timerSeconds <= 0) {
@@ -487,7 +703,7 @@
       document.getElementById("countdown").textContent = timerSeconds;
     }, 1000);
 
-    // Initial load
+    // Initial Load
     fetchElectionData();
   </script>
 </body>
