@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8EC" />
+  <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Manipur University Students' Union Election Result - Live Portal</title>
   <style>
@@ -365,6 +365,17 @@
       z-index: 1;
     }
 
+    .booth-table tfoot td, .booth-table tfoot th {
+      background: #edf2f7;
+      color: var(--primary);
+      font-weight: 700;
+      border-top: 2px solid #a0aec0;
+    }
+
+    .booth-table tfoot th.sticky-col {
+      background: #e2e8f0;
+    }
+
     .post-footer {
       padding: 10px 18px;
       background: #f7fafc;
@@ -384,8 +395,8 @@
   </header>
 
   <div style="text-align: center; font-size: 0.85rem; background-color: #fff3cd; color: #856404; padding: 6px 12px; border-radius: 4px; margin-bottom: 10px;">
-  <strong>Disclaimer:</strong> Results are based on Election Committee announcements and are subject to correction for any discrepancies.
-</div>
+    <strong>Disclaimer:</strong> Results are based on Election Committee announcements and are subject to correction for any discrepancies.
+  </div>
 
   <div class="status-bar">
     <div class="live-indicator">
@@ -444,13 +455,15 @@
       const lines = csvText.trim().split(/\r?\n/);
       const rows = [];
 
-      // Skip Row 0 (headers: Post, Candidate, Booth 1...Booth 15, Total)
+      // Skip Row 0 (headers: Post, Candidate, Booth 1...Booth 15, Total, Differ)
       for (let i = 1; i < lines.length; i++) {
         if (!lines[i].trim()) continue;
         const cols = splitCSVLine(lines[i]);
         const post = cols[0] || "";
         const candidate = cols[1] || "";
-        if (!post || !candidate) continue;
+
+        // Ignore summary rows where Post is "Total" or Candidate is blank
+        if (!post || !candidate || post.trim().toUpperCase() === "TOTAL") continue;
 
         const booths = [];
         let calculatedSum = 0;
@@ -659,6 +672,20 @@
           `;
         }).join("");
 
+        // Calculate per-booth totals across all candidates (including NOTA)
+        let boothTotalCells = "";
+        for (let b = 0; b < TOTAL_BOOTHS; b++) {
+          let bSum = 0;
+          let hasEntry = false;
+          sorted.forEach(cand => {
+            if (cand.booths[b] !== null) {
+              bSum += cand.booths[b];
+              hasEntry = true;
+            }
+          });
+          boothTotalCells += `<td>${hasEntry ? bSum : '-'}</td>`;
+        }
+
         const isExpanded = !!openBoothTables[postId];
 
         return `
@@ -687,6 +714,13 @@
                 <tbody>
                   ${boothRows}
                 </tbody>
+                <tfoot>
+                  <tr>
+                    <th class="sticky-col">Total</th>
+                    ${boothTotalCells}
+                    <td><strong>${totalVotes}</strong></td>
+                  </tr>
+                </tfoot>
               </table>
             </div>
             <div class="post-footer">
